@@ -1,7 +1,7 @@
 import Bookmark from "../models/Bookmark.js";
 import fetchTitleFromURL from "../utils/fetchTitle.js";
 import fetch from "node-fetch";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 
 // CREATE BOOKMARK
 export const createBookmark = async (req, res) => {
