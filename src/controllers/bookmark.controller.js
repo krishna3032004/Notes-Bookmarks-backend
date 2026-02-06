@@ -1,5 +1,7 @@
 import Bookmark from "../models/Bookmark.js";
 import fetchTitleFromURL from "../utils/fetchTitle.js";
+import fetch from "node-fetch";
+import cheerio from "cheerio";
 
 // CREATE BOOKMARK
 export const createBookmark = async (req, res) => {
@@ -61,6 +63,7 @@ export const getBookmarks = async (req, res) => {
     const bookmarks = await Bookmark.find({user:req.user._id,...filter,})
       .skip((page - 1) * limit)
       .limit(Number(limit))
+
       .sort({ createdAt: -1 });
 
     const total = await Bookmark.countDocuments(filter);
@@ -141,3 +144,24 @@ export const toggleBookmarkFavorite = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+export const fetchMetadata = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ message: "URL required" });
+
+    const response = await fetch(url);
+    const html = await response.text();
+
+    const $ = cheerio.load(html);
+    const title = $("title").text() || "";
+    const description = $('meta[name="description"]').attr("content") || "";
+
+    res.json({ title, description });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch metadata" });
+  }
+}
